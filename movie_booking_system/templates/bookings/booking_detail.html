@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block title %}Booking Details - MovieShowtime{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Booking Status Banner -->
+            {% if booking.status == 'confirmed' %}
+                <div class="alert alert-success mb-4">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        <div>
+                            <h5 class="alert-heading mb-1">Booking Confirmed!</h5>
+                            <p class="mb-0">Your tickets are ready. Have a great show!</p>
+                        </div>
+                    </div>
+                </div>
+            {% elif booking.status == 'cancelled' %}
+                <div class="alert alert-danger mb-4">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-x-circle-fill me-2"></i>
+                        <div>
+                            <h5 class="alert-heading mb-1">Booking Cancelled</h5>
+                            <p class="mb-0">This booking has been cancelled.</p>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Movie Ticket -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <div class="row">
+                        <!-- Movie Poster -->
+                        <div class="col-md-4 mb-4 mb-md-0">
+                            {% if booking.show.movie.poster_image %}
+                                <img src="{{ booking.show.movie.poster_image.url }}" alt="{{ booking.show.movie.title }}" class="img-fluid rounded">
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Booking Details -->
+                        <div class="col-md-8">
+                            <h3 class="mb-3">{{ booking.show.movie.title }}</h3>
+                            
+                            <div class="row mb-4">
+                                <div class="col-6">
+                                    <p class="text-muted mb-1">Date</p>
+                                    <p class="mb-3 fw-bold">{{ booking.show.show_date|date:"D, M d, Y" }}</p>
+                                    
+                                    <p class="text-muted mb-1">Theater</p>
+                                    <p class="mb-3 fw-bold">{{ booking.show.theater.name }}</p>
+                                    
+                                    <p class="text-muted mb-1">Format</p>
+                                    <p class="mb-0 fw-bold">{{ booking.show.format_type }}</p>
+                                </div>
+                                <div class="col-6">
+                                    <p class="text-muted mb-1">Time</p>
+                                    <p class="mb-3 fw-bold">{{ booking.show.show_time|time:"g:i A" }}</p>
+                                    
+                                    <p class="text-muted mb-1">Screen</p>
+                                    <p class="mb-3 fw-bold">Screen {{ booking.show.screen_number }}</p>
+                                    
+                                    <p class="text-muted mb-1">Language</p>
+                                    <p class="mb-0 fw-bold">{{ booking.show.movie.language }}</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Seats and Price -->
+                            <div class="row">
+                                <div class="col-6">
+                                    <p class="text-muted mb-1">Seats</p>
+                                    <p class="mb-3 fw-bold">{{ booking.seats|join:", " }}</p>
+                                </div>
+                                <div class="col-6">
+                                    <p class="text-muted mb-1">Amount Paid</p>
+                                    <p class="mb-3 fw-bold">₹{{ booking.total_amount }}</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Booking ID -->
+                            <div class="border-top pt-3 mt-3">
+                                <p class="text-muted mb-1">Booking ID</p>
+                                <p class="mb-0 fw-bold">{{ booking.id }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'bookings:my_bookings' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to My Bookings
+                </a>
+                {% if booking.status == 'confirmed' and booking.show.show_date >= today %}
+                    <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cancelModal">
+                        <i class="bi bi-x-circle"></i> Cancel Booking
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Booking Modal -->
+{% if booking.status == 'confirmed' and booking.show.show_date >= today %}
+    <div class="modal fade" id="cancelModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Cancel Booking</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to cancel this booking?</p>
+                    <ul class="text-muted">
+                        <li>This action cannot be undone</li>
+                        <li>Refund will be processed according to cancellation policy</li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <form method="post" action="{% url 'bookings:cancel_booking' booking.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Cancel Booking</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        border: none;
+        border-radius: 10px;
+    }
+    
+    .alert {
+        border: none;
+        border-radius: 10px;
+    }
+    
+    .alert-success {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+    }
+    
+    .alert-danger {
+        background-color: #ffebee;
+        color: #c62828;
+    }
+    
+    .bi {
+        font-size: 1.2rem;
+    }
+    
+    .modal-content {
+        border: none;
+        border-radius: 10px;
+    }
+</style>
+{% endblock %} 

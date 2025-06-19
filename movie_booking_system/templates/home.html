@@ -1,0 +1,305 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Movie Ticket Booking{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Light theme with BookMyShow red accents */
+    body {
+        background-color: #f8f9fa;
+        color: #333333;
+    }
+    
+    .navbar {
+        background-color: #ffffff !important;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .bms-card {
+        background-color: #ffffff;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: transform 0.3s;
+        border: 1px solid #e0e0e0;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .bms-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .bms-card .card-title {
+        font-weight: 600;
+        color: #333333;
+    }
+    
+    .bms-card .card-footer {
+        background-color: #ffffff;
+        border-top: 1px solid #e0e0e0;
+    }
+    
+    .bms-btn {
+        background-color: #e6194b;
+        border: none;
+        border-radius: 5px;
+        padding: 8px 16px;
+        color: white;
+        font-weight: 600;
+    }
+    
+    .bms-btn:hover {
+        background-color: #c60e3a;
+    }
+    
+    .bms-section-title {
+        font-weight: 700;
+        margin-bottom: 20px;
+        color: #333333;
+        position: relative;
+        display: inline-block;
+    }
+    
+    .bms-section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        left: 0;
+        width: 50px;
+        height: 3px;
+        background-color: #e6194b;
+    }
+    
+    .carousel-item {
+        height: 400px;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+    }
+    .carousel-item::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+    }
+    .carousel-overlay {
+        background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 60%, rgba(0,0,0,0.05) 100%);
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: 0;
+        display: flex;
+        align-items: flex-end;
+        padding: 40px 0 30px 0;
+        z-index: 2;
+    }
+    .carousel-overlay .bms-btn.btn {
+        position: relative;
+        z-index: 3;
+    }
+    
+    .carousel-overlay .container {
+        color: #fff;
+        text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+    }
+    
+    .carousel-overlay h2 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: #fff;
+        text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+    }
+    
+    .carousel-overlay p {
+        font-size: 1.2rem;
+        font-weight: 400;
+        margin-bottom: 18px;
+        color: #f1f1f1;
+        text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+    }
+    
+    .bms-btn.btn {
+        font-size: 1.1rem;
+        padding: 10px 28px;
+        font-weight: 600;
+        border-radius: 6px;
+    }
+    
+    .genre-badge {
+        background-color: #f0f0f0;
+        color: #333;
+        border-radius: 4px;
+        padding: 3px 8px;
+        margin-right: 5px;
+        font-size: 12px;
+    }
+    
+    .movie-info {
+        color: #666;
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+    
+    .filter-container {
+        background-color: #ffffff;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        border: 1px solid #e0e0e0;
+    }
+    
+    .filter-label {
+        color: #666;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+    
+    .filter-select {
+        background-color: #f8f9fa;
+        color: #333;
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+    }
+    
+    footer {
+        background-color: #ffffff !important;
+        border-top: 1px solid #e0e0e0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Main Carousel -->
+<div id="mainCarousel" class="carousel slide mb-5" data-bs-ride="carousel">
+    <div class="carousel-inner">
+        {% if movies %}
+            {% for movie in movies|slice:":3" %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}" style="background-image: url('{% if movie.poster_image %}{{ movie.poster_image.url }}{% else %}https://via.placeholder.com/1200x400/f8f9fa/e6194b?text=No+Image{% endif %}');">
+                    <div class="carousel-overlay">
+                        <div class="container">
+                            <h2>{{ movie.title }}</h2>
+                            <p class="d-none d-md-block">{{ movie.description|truncatechars:150 }}</p>
+                            <a href="{% url 'movies:movie_detail' movie.id %}" class="bms-btn btn">Book Now</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="carousel-item active" style="background-image: url('https://via.placeholder.com/1200x400/f8f9fa/e6194b?text=No+Movies+Available');">
+                <div class="carousel-overlay">
+                    <div class="container">
+                        <h2>No Movies Available</h2>
+                        <p>Please check back later for the latest movie listings.</p>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#mainCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+    </button>
+</div>
+
+<!-- Filter Section -->
+<div class="container mb-5">
+    <form method="GET" action="{% url 'movies:movie_list' %}" id="filterForm">
+        <div class="filter-container">
+            <div class="row">
+                <div class="col-md-3 mb-3 mb-md-0">
+                    <div class="filter-label">Language</div>
+                    <select name="language" class="form-select filter-select" onchange="document.getElementById('filterForm').submit();">
+                        <option value="All Languages" {% if selected_language == 'All Languages' or not selected_language %}selected{% endif %}>All Languages</option>
+                        {% for lang in all_languages %}
+                            <option value="{{ lang }}" {% if selected_language == lang %}selected{% endif %}>{{ lang }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3 mb-md-0">
+                    <div class="filter-label">Genre</div>
+                    <select name="genre" class="form-select filter-select" onchange="document.getElementById('filterForm').submit();">
+                        <option value="All Genres" {% if selected_genre == 'All Genres' or not selected_genre %}selected{% endif %}>All Genres</option>
+                        {% for gen in all_genres %}
+                            <option value="{{ gen }}" {% if selected_genre == gen %}selected{% endif %}>{{ gen }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3 mb-md-0">
+                    <div class="filter-label">Format</div>
+                    <select name="format" class="form-select filter-select" onchange="document.getElementById('filterForm').submit();">
+                        <option value="All Formats" {% if selected_format == 'All Formats' or not selected_format %}selected{% endif %}>All Formats</option>
+                        <option value="2D" {% if selected_format == '2D' %}selected{% endif %}>2D</option>
+                        <option value="3D" {% if selected_format == '3D' %}selected{% endif %}>3D</option>
+                        <option value="IMAX" {% if selected_format == 'IMAX' %}selected{% endif %}>IMAX</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <div class="filter-label">Search</div>
+                    <input type="text" name="search" class="form-control filter-select" placeholder="Search movies..." value="{{ search_query }}">
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12 text-end">
+                    <button type="submit" class="bms-btn btn btn-sm">Apply Filters</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Now Showing Section -->
+<div class="container mb-5">
+    <h2 class="bms-section-title">Now Showing</h2>
+    <div class="row">
+        {% if movies %}
+            {% for movie in movies %}
+                <div class="col-md-3 mb-4">
+                    <div class="bms-card card h-100">
+                        {% if movie.poster_image %}
+                            <img src="{{ movie.poster_image.url }}" class="card-img-top" alt="{{ movie.title }}" style="height: 250px; object-fit: cover;">
+                        {% else %}
+                            <div class="bg-light text-dark d-flex justify-content-center align-items-center" style="height: 250px;">
+                                <span>No Image</span>
+                            </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ movie.title }}</h5>
+                            <p class="movie-info">{{ movie.duration }} mins • {{ movie.language }}</p>
+                            <span class="genre-badge">{{ movie.genre }}</span>
+                        </div>
+                        <div class="card-footer text-center">
+                            <a href="{% url 'movies:movie_detail' movie.id %}" class="bms-btn btn">Book Tickets</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-light">
+                    No movies are currently showing based on your filters.
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Coming Soon Section -->
+<div class="container mb-5">
+    <h2 class="bms-section-title">Coming Soon</h2>
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-light">
+                No upcoming movies available at the moment.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

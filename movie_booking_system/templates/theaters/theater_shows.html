@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Shows at {{ theater.name }} - MovieShowtime{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Theater Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="mb-2">{{ theater.name }}</h1>
+            <p class="text-muted mb-0">
+                <i class="bi bi-geo-alt-fill"></i> {{ theater.location }}
+            </p>
+        </div>
+        <a href="{% url 'theaters:theater_detail' theater.id %}" class="btn btn-outline-primary">
+            Theater Details
+        </a>
+    </div>
+    
+    <!-- Shows by Date -->
+    {% if shows_by_date %}
+        <div class="row">
+            <div class="col-md-3">
+                <!-- Date Navigation -->
+                <div class="card shadow-sm mb-4 mb-md-0">
+                    <div class="card-header bg-white">
+                        <h5 class="card-title mb-0">Show Dates</h5>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        {% for date in shows_by_date.keys %}
+                            <a href="#date-{{ date|date:'Y-m-d' }}" class="list-group-item list-group-item-action">
+                                {{ date|date:"D, M d" }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-9">
+                <!-- Shows for each date -->
+                {% for date, shows in shows_by_date.items %}
+                    <div class="card shadow-sm mb-4" id="date-{{ date|date:'Y-m-d' }}">
+                        <div class="card-header bg-white">
+                            <h4 class="card-title mb-0">{{ date|date:"l, F d" }}</h4>
+                        </div>
+                        <div class="card-body">
+                            {% regroup shows by movie as movie_shows %}
+                            {% for movie_group in movie_shows %}
+                                <div class="mb-4">
+                                    <div class="d-flex align-items-center mb-3">
+                                        {% if movie_group.grouper.poster_image %}
+                                            <img src="{{ movie_group.grouper.poster_image.url }}" alt="{{ movie_group.grouper.title }}" class="me-3" style="width: 60px; height: 90px; object-fit: cover;">
+                                        {% endif %}
+                                        <div>
+                                            <h5 class="mb-1">{{ movie_group.grouper.title }}</h5>
+                                            <p class="text-muted mb-0">
+                                                {{ movie_group.grouper.language }} • {{ movie_group.grouper.duration }} mins
+                                            </p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex flex-wrap gap-2">
+                                        {% for show in movie_group.list %}
+                                            <a href="{% url 'bookings:select_seats' show.id %}" class="btn btn-outline-primary">
+                                                <div class="small fw-bold">{{ show.show_time|time:"g:i A" }}</div>
+                                                <div class="small text-muted">Screen {{ show.screen_number }}</div>
+                                            </a>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                
+                                {% if not forloop.last %}
+                                    <hr>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            No shows scheduled for the next 7 days.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        border: none;
+        border-radius: 10px;
+    }
+    
+    .list-group-item {
+        border-left: none;
+        border-right: none;
+    }
+    
+    .list-group-item:first-child {
+        border-top: none;
+    }
+    
+    .list-group-item:last-child {
+        border-bottom: none;
+    }
+    
+    .btn-outline-primary {
+        min-width: 100px;
+        text-align: center;
+        padding: 8px 16px;
+    }
+</style>
+{% endblock %} 

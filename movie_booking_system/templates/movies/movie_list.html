@@ -1,0 +1,314 @@
+{% extends 'base.html' %}
+
+{% block title %}Movies - Movie Ticket Booking{% endblock %}
+
+{% block extra_css %}
+<style>
+    .filter-container {
+        background-color: #ffffff;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        border: 1px solid #e0e0e0;
+    }
+    
+    .filter-label {
+        color: #666;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+    
+    .filter-select {
+        background-color: #f8f9fa;
+        color: #333;
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+    }
+    
+    .bms-btn {
+        background-color: #e6194b;
+        border: none;
+        border-radius: 5px;
+        padding: 8px 16px;
+        color: white;
+        font-weight: 600;
+    }
+    
+    .bms-btn:hover {
+        background-color: #c60e3a;
+    }
+    
+    .movie-card {
+        border-radius: 8px;
+        overflow: hidden;
+        transition: transform 0.3s;
+        border: 1px solid #e0e0e0;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .movie-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .genre-badge {
+        background-color: #f0f0f0;
+        color: #333;
+        border-radius: 4px;
+        padding: 3px 8px;
+        margin-right: 5px;
+        font-size: 12px;
+    }
+    
+    /* Autocomplete Styles */
+    .search-container {
+        position: relative;
+    }
+    
+    .movie-suggestions {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background-color: white;
+        border-radius: 0 0 8px 8px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        max-height: 400px;
+        overflow-y: auto;
+        display: none;
+    }
+    
+    .suggestion-item {
+        padding: 10px 15px;
+        border-bottom: 1px solid #eee;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+    }
+    
+    .suggestion-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .suggestion-item:last-child {
+        border-bottom: none;
+    }
+    
+    .suggestion-poster {
+        width: 40px;
+        height: 60px;
+        margin-right: 10px;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+    
+    .suggestion-info {
+        flex: 1;
+    }
+    
+    .suggestion-title {
+        font-weight: 600;
+        margin-bottom: 2px;
+    }
+    
+    .suggestion-meta {
+        font-size: 12px;
+        color: #666;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Movies</h1>
+    
+    <!-- Search and Filter Section -->
+    <form method="GET" action="{% url 'movies:movie_list' %}" id="filterForm">
+        <div class="filter-container">
+            <div class="row">
+                <div class="col-md-9">
+                    <div class="search-container">
+                        <input type="text" name="search" id="movieSearch" class="form-control mb-3" placeholder="Search movies..." value="{{ search_query }}" autocomplete="off">
+                        <div class="movie-suggestions" id="movieSuggestions"></div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn bms-btn w-100">Search</button>
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-md-4 mb-3">
+                    <div class="filter-label">Language</div>
+                    <select name="language" class="form-select filter-select">
+                        <option value="All Languages" {% if selected_language == 'All Languages' or not selected_language %}selected{% endif %}>All Languages</option>
+                        {% for lang in all_languages %}
+                            <option value="{{ lang }}" {% if selected_language == lang %}selected{% endif %}>{{ lang }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="filter-label">Genre</div>
+                    <select name="genre" class="form-select filter-select">
+                        <option value="All Genres" {% if selected_genre == 'All Genres' or not selected_genre %}selected{% endif %}>All Genres</option>
+                        {% for gen in all_genres %}
+                            <option value="{{ gen }}" {% if selected_genre == gen %}selected{% endif %}>{{ gen }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="filter-label">Format</div>
+                    <select name="format" class="form-select filter-select">
+                        <option value="All Formats" {% if selected_format == 'All Formats' or not selected_format %}selected{% endif %}>All Formats</option>
+                        <option value="2D" {% if selected_format == '2D' %}selected{% endif %}>2D</option>
+                        <option value="3D" {% if selected_format == '3D' %}selected{% endif %}>3D</option>
+                        <option value="IMAX" {% if selected_format == 'IMAX' %}selected{% endif %}>IMAX</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-12">
+                    <button type="submit" class="btn bms-btn">Apply Filters</button>
+                    <a href="{% url 'movies:movie_list' %}" class="btn btn-outline-secondary ms-2">Clear Filters</a>
+                </div>
+            </div>
+        </div>
+    </form>
+    
+    <!-- Filter Summary -->
+    {% if search_query or selected_language != 'All Languages' or selected_genre != 'All Genres' or selected_format != 'All Formats' %}
+        <div class="mb-4">
+            <p>
+                Showing results 
+                {% if search_query %}for "{{ search_query }}"{% endif %}
+                {% if selected_language != 'All Languages' %}in {{ selected_language }}{% endif %}
+                {% if selected_genre != 'All Genres' %}with genre {{ selected_genre }}{% endif %}
+                {% if selected_format != 'All Formats' %}in {{ selected_format }}{% endif %}
+            </p>
+        </div>
+    {% endif %}
+
+    <div class="row">
+        {% if movies %}
+            {% for movie in movies %}
+                <div class="col-md-4 mb-4">
+                    <div class="card movie-card h-100">
+                        {% if movie.poster_image %}
+                            <img src="{{ movie.poster_image.url }}" class="card-img-top" alt="{{ movie.title }}" style="height: 250px; object-fit: cover;">
+                        {% else %}
+                            <div class="bg-light text-dark d-flex justify-content-center align-items-center" style="height: 250px;">
+                                <span>No Image</span>
+                            </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ movie.title }}</h5>
+                            <p class="text-muted small mb-2">{{ movie.duration }} mins • {{ movie.language }}</p>
+                            <span class="genre-badge mb-2 d-inline-block">{{ movie.genre }}</span>
+                            <p class="card-text">{{ movie.description|truncatechars:100 }}</p>
+                        </div>
+                        <div class="card-footer text-center bg-white">
+                            <a href="{% url 'movies:movie_detail' movie.id %}" class="btn bms-btn">Book Now</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    No movies found matching your criteria. Please try different filters.
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('movieSearch');
+        const suggestionsContainer = document.getElementById('movieSuggestions');
+        let searchTimeout;
+        
+        // Function to fetch suggestions
+        function fetchSuggestions(query) {
+            fetch(`{% url 'movies:movie_suggestions' %}?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.results.length > 0) {
+                        // Clear previous suggestions
+                        suggestionsContainer.innerHTML = '';
+                        
+                        // Add new suggestions
+                        data.results.forEach(movie => {
+                            const suggestionItem = document.createElement('div');
+                            suggestionItem.className = 'suggestion-item';
+                            
+                            const posterUrl = movie.poster_url || 'https://via.placeholder.com/40x60/e6194b/ffffff?text=No+Image';
+                            
+                            suggestionItem.innerHTML = `
+                                <img src="${posterUrl}" class="suggestion-poster" alt="${movie.title}">
+                                <div class="suggestion-info">
+                                    <div class="suggestion-title">${movie.title}</div>
+                                    <div class="suggestion-meta">${movie.genre} • ${movie.language}</div>
+                                </div>
+                            `;
+                            
+                            // Add click event to go to movie detail
+                            suggestionItem.addEventListener('click', function() {
+                                window.location.href = `/movies/${movie.id}/`;
+                            });
+                            
+                            suggestionsContainer.appendChild(suggestionItem);
+                        });
+                        
+                        // Show suggestions
+                        suggestionsContainer.style.display = 'block';
+                    } else {
+                        suggestionsContainer.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching suggestions:', error);
+                });
+        }
+        
+        // Search input event
+        searchInput.addEventListener('input', function(e) {
+            const query = e.target.value.trim();
+            
+            // Clear previous timeout
+            clearTimeout(searchTimeout);
+            
+            if (query.length >= 2) {
+                // Set a small delay to avoid excessive requests
+                searchTimeout = setTimeout(() => {
+                    fetchSuggestions(query);
+                }, 300);
+            } else {
+                suggestionsContainer.style.display = 'none';
+            }
+        });
+        
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+                suggestionsContainer.style.display = 'none';
+            }
+        });
+        
+        // Prevent form submission when pressing Enter in the search field
+        // if suggestions are displayed and not empty
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && suggestionsContainer.style.display === 'block' && suggestionsContainer.children.length > 0) {
+                e.preventDefault();
+                // Optionally, you can select the first suggestion here
+            }
+        });
+    });
+</script>
+{% endblock %} 

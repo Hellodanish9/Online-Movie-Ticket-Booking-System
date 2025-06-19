@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}Shopping Cart - Movie Ticket Booking{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1>Your Booking Cart</h1>
+        
+        {% if cart_items %}
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Selected Tickets</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Movie</th>
+                                    <th>Theater</th>
+                                    <th>Show Date & Time</th>
+                                    <th>Seats</th>
+                                    <th>Price</th>
+                                    <th>Expires In</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in cart_items %}
+                                    <tr>
+                                        <td>{{ item.show.movie.title }}</td>
+                                        <td>{{ item.show.theater.name }}</td>
+                                        <td>{{ item.show.show_date }} {{ item.show.show_time }}</td>
+                                        <td>{{ item.seat_numbers }}</td>
+                                        <td>₹{{ item.total_price }}</td>
+                                        <td id="timer-{{ item.id }}">Loading...</td>
+                                    </tr>
+                                {% endfor %}
+                                <tr class="table-primary">
+                                    <td colspan="4" class="text-end"><strong>Total:</strong></td>
+                                    <td><strong>₹{{ total_amount }}</strong></td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-3">
+                        <a href="{% url 'movies:movie_list' %}" class="btn btn-secondary">Continue Shopping</a>
+                        <a href="{% url 'bookings:checkout' %}" class="btn btn-primary" id="checkout-btn">Proceed to Checkout</a>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <p>Your cart is empty or has expired.</p>
+                <a href="{% url 'movies:movie_list' %}" class="btn btn-primary">Browse Movies</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        {% for item in cart_items %}
+            // Set the date we're counting down to
+            var countDownDate{{ item.id }} = new Date("{{ item.expires_at|date:'c' }}").getTime();
+            
+            // Update the count down every 1 second
+            var x{{ item.id }} = setInterval(function() {
+                var now = new Date().getTime();
+                var distance = countDownDate{{ item.id }} - now;
+                
+                // Time calculations for minutes and seconds
+                var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                
+                // Display the result
+                document.getElementById("timer-{{ item.id }}").innerHTML = minutes + "m " + seconds + "s";
+                
+                // If the count down is finished, write some text
+                if (distance < 0) {
+                    clearInterval(x{{ item.id }});
+                    document.getElementById("timer-{{ item.id }}").innerHTML = "EXPIRED";
+                    document.getElementById("checkout-btn").disabled = true;
+                }
+            }, 1000);
+        {% endfor %}
+    });
+</script>
+{% endblock %} 

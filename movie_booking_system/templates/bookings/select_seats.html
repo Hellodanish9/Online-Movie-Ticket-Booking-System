@@ -1,0 +1,297 @@
+{% extends 'base.html' %}
+
+{% block title %}Select Seats - {{ show.movie.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .seating-layout {
+        background-color: #f5f5f5;
+        padding: 30px;
+        border-radius: 8px;
+    }
+
+    .screen-container {
+        perspective: 500px;
+        margin-bottom: 40px;
+    }
+
+    .screen {
+        background: linear-gradient(to bottom, #fff, #d3d3d3);
+        height: 40px;
+        width: 100%;
+        transform: rotateX(-30deg);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        text-align: center;
+        line-height: 40px;
+        font-weight: bold;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+
+    .seat-container {
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .seat-category {
+        margin-bottom: 30px;
+    }
+
+    .category-label {
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 15px;
+        padding-bottom: 5px;
+        border-bottom: 2px solid #eee;
+    }
+
+    .seat-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+        gap: 6px;
+    }
+
+    .row-label {
+        width: 30px;
+        font-weight: bold;
+        color: #666;
+    }
+
+    .seat-group {
+        display: flex;
+        gap: 6px;
+        margin-right: 20px;
+    }
+
+    .seat {
+        width: 26px;
+        height: 26px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+    }
+
+    .seat-available {
+        background-color: #fff;
+        border: 1px solid #51a351;
+        color: #51a351;
+    }
+
+    .seat-available:hover {
+        background-color: #eefbee;
+    }
+
+    .seat-selected {
+        background-color: #0275d8;
+        color: white;
+        border: 1px solid #0275d8;
+    }
+
+    .seat-booked {
+        background-color: #f8f9fa;
+        border: 1px solid #ddd;
+        color: #ccc;
+        cursor: not-allowed;
+    }
+
+    .premium-seat .seat-available {
+        border: 1px solid #ffc107;
+        color: #ffc107;
+    }
+
+    .premium-seat .seat-available:hover {
+        background-color: #fff8e6;
+    }
+
+    .seat-info {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        margin-top: 30px;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .info-seat {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+    }
+
+    .price-info {
+        margin-top: 20px;
+        text-align: right;
+        font-size: 14px;
+        color: #666;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">{{ show.movie.title }} - {{ show.theater.name }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <p><strong>Date:</strong> {{ show.show_date }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <p><strong>Time:</strong> {{ show.show_time }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <p><strong>Price:</strong> ₹{{ show.ticket_price }} per seat</p>
+                        </div>
+                    </div>
+
+                    <div class="seating-layout">
+                        <div class="screen-container">
+                            <div class="screen">Screen</div>
+                        </div>
+
+                        <form method="post" action="{% url 'bookings:add_to_cart' show.id %}">
+                            {% csrf_token %}
+                            
+                            <div class="seat-container">
+                                <!-- Premium Seats -->
+                                <div class="seat-category premium-seat">
+                                    <div class="category-label">Premium - ₹{{ show.ticket_price|add:"100" }}</div>
+                                    {% for row in 'ABC'|make_list %}
+                                        <div class="seat-row">
+                                            <div class="row-label">{{ row }}</div>
+                                            <div class="seat-group">
+                                                {% for seat in '123456'|make_list %}
+                                                    {% with seat_id=row|stringformat:"s"|add:seat|stringformat:"s" %}
+                                                        {% if seat_id in booked_seats %}
+                                                            <button type="button" class="seat seat-booked" disabled>{{ seat }}</button>
+                                                        {% else %}
+                                                            <button type="button" class="seat seat-available" onclick="toggleSeat(this, '{{ seat_id }}')">
+                                                                {{ seat }}
+                                                            </button>
+                                                            <input type="checkbox" name="seats" value="{{ seat_id }}" class="d-none" id="seat-{{ seat_id }}">
+                                                        {% endif %}
+                                                    {% endwith %}
+                                                {% endfor %}
+                                            </div>
+                                            <div class="seat-group">
+                                                {% for seat in '789012'|make_list %}
+                                                    {% with seat_id=row|stringformat:"s"|add:seat|stringformat:"s" %}
+                                                        {% if seat_id in booked_seats %}
+                                                            <button type="button" class="seat seat-booked" disabled>{{ seat }}</button>
+                                                        {% else %}
+                                                            <button type="button" class="seat seat-available" onclick="toggleSeat(this, '{{ seat_id }}')">
+                                                                {{ seat }}
+                                                            </button>
+                                                            <input type="checkbox" name="seats" value="{{ seat_id }}" class="d-none" id="seat-{{ seat_id }}">
+                                                        {% endif %}
+                                                    {% endwith %}
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+
+                                <!-- Standard Seats -->
+                                <div class="seat-category">
+                                    <div class="category-label">Standard - ₹{{ show.ticket_price }}</div>
+                                    {% for row in 'DEFGHIJ'|make_list %}
+                                        <div class="seat-row">
+                                            <div class="row-label">{{ row }}</div>
+                                            <div class="seat-group">
+                                                {% for seat in '123456'|make_list %}
+                                                    {% with seat_id=row|stringformat:"s"|add:seat|stringformat:"s" %}
+                                                        {% if seat_id in booked_seats %}
+                                                            <button type="button" class="seat seat-booked" disabled>{{ seat }}</button>
+                                                        {% else %}
+                                                            <button type="button" class="seat seat-available" onclick="toggleSeat(this, '{{ seat_id }}')">
+                                                                {{ seat }}
+                                                            </button>
+                                                            <input type="checkbox" name="seats" value="{{ seat_id }}" class="d-none" id="seat-{{ seat_id }}">
+                                                        {% endif %}
+                                                    {% endwith %}
+                                                {% endfor %}
+                                            </div>
+                                            <div class="seat-group">
+                                                {% for seat in '789012'|make_list %}
+                                                    {% with seat_id=row|stringformat:"s"|add:seat|stringformat:"s" %}
+                                                        {% if seat_id in booked_seats %}
+                                                            <button type="button" class="seat seat-booked" disabled>{{ seat }}</button>
+                                                        {% else %}
+                                                            <button type="button" class="seat seat-available" onclick="toggleSeat(this, '{{ seat_id }}')">
+                                                                {{ seat }}
+                                                            </button>
+                                                            <input type="checkbox" name="seats" value="{{ seat_id }}" class="d-none" id="seat-{{ seat_id }}">
+                                                        {% endif %}
+                                                    {% endwith %}
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <div class="seat-info">
+                                <div class="info-item">
+                                    <div class="info-seat seat-available"></div>
+                                    <span>Available</span>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-seat seat-selected"></div>
+                                    <span>Selected</span>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-seat seat-booked"></div>
+                                    <span>Booked</span>
+                                </div>
+                            </div>
+
+                            <div class="text-center mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg">Proceed to Checkout</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function toggleSeat(element, seatId) {
+        const checkbox = document.getElementById('seat-' + seatId);
+        
+        if (element.classList.contains('seat-available')) {
+            element.classList.remove('seat-available');
+            element.classList.add('seat-selected');
+            checkbox.checked = true;
+        } else {
+            element.classList.remove('seat-selected');
+            element.classList.add('seat-available');
+            checkbox.checked = false;
+        }
+    }
+</script>
+{% endblock %} 

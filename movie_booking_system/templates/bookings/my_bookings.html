@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+
+{% block title %}My Bookings - MovieShowtime{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">My Bookings</h1>
+
+    <!-- Upcoming Bookings -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h4 class="card-title mb-0">Upcoming Shows</h4>
+        </div>
+        <div class="card-body">
+            {% if upcoming_bookings %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Movie</th>
+                                <th>Date & Time</th>
+                                <th>Theater</th>
+                                <th>Seats</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for booking in upcoming_bookings %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if booking.show.movie.poster_image %}
+                                                <img src="{{ booking.show.movie.poster_image.url }}" alt="{{ booking.show.movie.title }}" class="me-2" style="width: 40px; height: 60px; object-fit: cover;">
+                                            {% endif %}
+                                            <div>
+                                                <h6 class="mb-0">{{ booking.show.movie.title }}</h6>
+                                                <small class="text-muted">{{ booking.show.movie.language }} • {{ booking.show.format_type }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>{{ booking.show.show_date|date:"D, M d, Y" }}</div>
+                                        <small class="text-muted">{{ booking.show.show_time|time:"g:i A" }}</small>
+                                    </td>
+                                    <td>
+                                        <div>{{ booking.show.theater.name }}</div>
+                                        <small class="text-muted">Screen {{ booking.show.screen_number }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark">{{ booking.number_of_seats }} Seats</span>
+                                        <div class="small text-muted">{{ booking.seat_numbers }}</div>
+                                    </td>
+                                    <td>
+                                        {% if booking.booking_status == 'confirmed' %}
+                                            <span class="badge bg-success">Confirmed</span>
+                                        {% elif booking.booking_status == 'cancelled' %}
+                                            <span class="badge bg-danger">Cancelled</span>
+                                        {% else %}
+                                            <span class="badge bg-warning text-dark">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'bookings:booking_detail' booking.id %}" class="btn btn-sm btn-primary">
+                                            View Ticket
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted mb-0">No upcoming shows booked.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Past Bookings -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <h4 class="card-title mb-0">Past Shows</h4>
+        </div>
+        <div class="card-body">
+            {% if past_bookings %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Movie</th>
+                                <th>Date & Time</th>
+                                <th>Theater</th>
+                                <th>Seats</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for booking in past_bookings %}
+                                <tr class="text-muted">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if booking.show.movie.poster_image %}
+                                                <img src="{{ booking.show.movie.poster_image.url }}" alt="{{ booking.show.movie.title }}" class="me-2" style="width: 40px; height: 60px; object-fit: cover; opacity: 0.7;">
+                                            {% endif %}
+                                            <div>
+                                                <h6 class="mb-0">{{ booking.show.movie.title }}</h6>
+                                                <small>{{ booking.show.movie.language }} • {{ booking.show.format_type }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>{{ booking.show.show_date|date:"D, M d, Y" }}</div>
+                                        <small>{{ booking.show.show_time|time:"g:i A" }}</small>
+                                    </td>
+                                    <td>
+                                        <div>{{ booking.show.theater.name }}</div>
+                                        <small>Screen {{ booking.show.screen_number }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark">{{ booking.number_of_seats }} Seats</span>
+                                        <div class="small">{{ booking.seat_numbers }}</div>
+                                    </td>
+                                    <td>
+                                        {% if booking.booking_status == 'confirmed' %}
+                                            <span class="badge bg-secondary">Completed</span>
+                                        {% elif booking.booking_status == 'cancelled' %}
+                                            <span class="badge bg-danger">Cancelled</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'bookings:booking_detail' booking.id %}" class="btn btn-sm btn-outline-secondary">
+                                            View Details
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted mb-0">No past bookings found.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        border: none;
+        border-radius: 10px;
+    }
+    
+    .card-header {
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .table > :not(caption) > * > * {
+        padding: 1rem;
+    }
+    
+    .table > tbody > tr > td {
+        vertical-align: middle;
+    }
+    
+    .badge {
+        padding: 0.5em 0.8em;
+        font-weight: 500;
+    }
+    
+    .btn-sm {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.875rem;
+    }
+</style>
+{% endblock %} 

@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ movie.title }} - Movie Ticket Booking{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        {% if movie.poster_image %}
+            <img src="{{ movie.poster_image.url }}" class="img-fluid rounded" alt="{{ movie.title }}">
+        {% else %}
+            <div class="bg-secondary text-white d-flex justify-content-center align-items-center rounded" style="height: 400px;">
+                <span>No Image</span>
+            </div>
+        {% endif %}
+    </div>
+    <div class="col-md-8">
+        <h1>{{ movie.title }}</h1>
+        <p class="text-muted">{{ movie.genre }} | {{ movie.language }} | {{ movie.duration }} mins</p>
+        
+        <h5 class="mt-4">Description</h5>
+        <p>{{ movie.description }}</p>
+        
+        <h5 class="mt-4">Available Shows</h5>
+        {% if shows %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Theater</th>
+                            <th>Screen</th>
+                            <th>Available Seats</th>
+                            <th>Price</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for show in shows %}
+                            <tr>
+                                <td>{{ show.show_date }}</td>
+                                <td>{{ show.show_time }}</td>
+                                <td>{{ show.theater.name }}</td>
+                                <td>{{ show.screen_number }}</td>
+                                <td>{{ show.available_seats }}</td>
+                                <td>₹{{ show.ticket_price }}</td>
+                                <td>
+                                    {% if show.available_seats > 0 %}
+                                        <a href="{% url 'bookings:select_seats' show.id %}" class="btn btn-sm btn-primary">Book</a>
+                                    {% else %}
+                                        <button class="btn btn-sm btn-secondary" disabled>Sold Out</button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                No shows available for this movie at the moment. Please check back later.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

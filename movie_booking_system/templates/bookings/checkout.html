@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% load booking_extras %}
+
+{% block title %}Checkout - Movie Ticket Booking{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h1>Checkout</h1>
+        
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Order Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Movie</th>
+                                <th>Theater</th>
+                                <th>Show</th>
+                                <th>Seats</th>
+                                <th>Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in cart_items %}
+                                <tr>
+                                    <td>{{ item.show.movie.title }}</td>
+                                    <td>{{ item.show.theater.name }}</td>
+                                    <td>{{ item.show.show_date }} {{ item.show.show_time }}</td>
+                                    <td>{{ item.seat_numbers }}</td>
+                                    <td>₹{{ item.total_price }}</td>
+                                </tr>
+                            {% endfor %}
+                            <tr class="table-primary">
+                                <td colspan="4" class="text-end"><strong>Subtotal:</strong></td>
+                                <td><strong>₹{{ total_amount }}</strong></td>
+                            </tr>
+                            {% with tax_amount=total_amount|multiply:0.18 %}
+                            <tr>
+                                <td colspan="4" class="text-end">GST (18%):</td>
+                                <td>₹{{ tax_amount|floatformat:2 }}</td>
+                            </tr>
+                            <tr class="table-primary">
+                                <td colspan="4" class="text-end"><strong>Total Amount:</strong></td>
+                                <td><strong>₹{{ total_amount|add:tax_amount|floatformat:2 }}</strong></td>
+                            </tr>
+                            {% endwith %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Payment Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'bookings:process_payment' %}">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Payment Method</label>
+                        <select name="payment_method" class="form-select" required>
+                            <option value="">Select payment method</option>
+                            <option value="credit_card">Credit Card</option>
+                            <option value="debit_card">Debit Card</option>
+                            <option value="upi">UPI</option>
+                            <option value="net_banking">Net Banking</option>
+                        </select>
+                    </div>
+                    
+                    <div id="card-details" class="mb-3 d-none">
+                        <div class="mb-3">
+                            <label class="form-label">Card Number</label>
+                            <input type="text" class="form-control" placeholder="1234 5678 9012 3456">
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Expiry Date</label>
+                                <input type="text" class="form-control" placeholder="MM/YY">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">CVV</label>
+                                <input type="text" class="form-control" placeholder="123">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Name on Card</label>
+                            <input type="text" class="form-control">
+                        </div>
+                    </div>
+                    
+                    <div id="upi-details" class="mb-3 d-none">
+                        <label class="form-label">UPI ID</label>
+                        <input type="text" class="form-control" placeholder="name@upi">
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">Pay Now</button>
+                    </div>
+                    
+                    <p class="mt-3 mb-0 text-muted small">By clicking "Pay Now", you agree to our terms and conditions.</p>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const paymentMethodSelect = document.querySelector('select[name="payment_method"]');
+        const cardDetails = document.getElementById('card-details');
+        const upiDetails = document.getElementById('upi-details');
+        
+        paymentMethodSelect.addEventListener('change', function() {
+            const paymentMethod = this.value;
+            
+            // Hide all payment details
+            cardDetails.classList.add('d-none');
+            upiDetails.classList.add('d-none');
+            
+            // Show relevant payment details
+            if (paymentMethod === 'credit_card' || paymentMethod === 'debit_card') {
+                cardDetails.classList.remove('d-none');
+            } else if (paymentMethod === 'upi') {
+                upiDetails.classList.remove('d-none');
+            }
+        });
+    });
+</script>
+{% endblock %} 

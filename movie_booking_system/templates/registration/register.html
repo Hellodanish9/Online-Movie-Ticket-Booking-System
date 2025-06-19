@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - Movie Ticket Booking{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+    
+    .auth-card {
+        background-color: #ffffff;
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .auth-header {
+        background-color: #e6194b;
+        border-radius: 10px 10px 0 0;
+        padding: 20px;
+    }
+    
+    .form-control {
+        background-color: #ffffff;
+        border-radius: 5px;
+        padding: 12px;
+        margin-bottom: 15px;
+        border: 1px solid #ced4da;
+        color: #333;
+    }
+    
+    .form-control:focus {
+        background-color: #ffffff;
+        box-shadow: 0 0 0 0.25rem rgba(230, 25, 75, 0.25);
+        border-color: #e6194b;
+        color: #333;
+    }
+    
+    .auth-btn {
+        background-color: #e6194b;
+        border: none;
+        border-radius: 5px;
+        padding: 12px;
+        font-weight: 600;
+    }
+    
+    .auth-btn:hover {
+        background-color: #c60e3a;
+    }
+    
+    .auth-link {
+        color: #e6194b;
+        text-decoration: none;
+    }
+    
+    .auth-link:hover {
+        text-decoration: underline;
+        color: #c60e3a;
+    }
+    
+    .form-floating label {
+        color: #6c757d;
+    }
+    
+    .form-floating>.form-control:focus~label,
+    .form-floating>.form-control:not(:placeholder-shown)~label {
+        color: #6c757d;
+        transform: scale(.85) translateY(-.5rem) translateX(.15rem);
+    }
+    
+    .form-text {
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center my-5">
+    <div class="col-md-6">
+        <div class="auth-card card">
+            <div class="auth-header text-white text-center">
+                <h3 class="mb-0">Create Account</h3>
+                <p class="mb-0 text-white">Join our movie ticket booking platform</p>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    {% if form.errors %}
+                        <div class="alert alert-danger mb-3">
+                            <strong>There were errors in your form:</strong>
+                            <ul class="mb-0">
+                                {% for field in form %}
+                                    {% for error in field.errors %}
+                                        <li>{{ field.label }}: {{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="form-floating mb-3">
+                        <input type="text" name="username" id="id_username" class="form-control" placeholder="Username" required>
+                        <label for="id_username">Username</label>
+                        {% if form.username.errors %}
+                            <div class="text-danger small mt-1">{{ form.username.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-floating mb-3">
+                        <input type="email" name="email" id="id_email" class="form-control" placeholder="Email" required>
+                        <label for="id_email">Email</label>
+                        {% if form.email.errors %}
+                            <div class="text-danger small mt-1">{{ form.email.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-floating mb-3">
+                        <input type="password" name="password1" id="id_password1" class="form-control" placeholder="Password" required>
+                        <label for="id_password1">Password</label>
+                        {% if form.password1.errors %}
+                            <div class="text-danger small mt-1">{{ form.password1.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">
+                            Your password must be 8+ characters long and contain letters and numbers.
+                        </div>
+                    </div>
+                    
+                    <div class="form-floating mb-4">
+                        <input type="password" name="password2" id="id_password2" class="form-control" placeholder="Confirm Password" required>
+                        <label for="id_password2">Confirm Password</label>
+                        {% if form.password2.errors %}
+                            <div class="text-danger small mt-1">{{ form.password2.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="auth-btn btn btn-primary btn-lg">Register</button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center py-3 border-0" style="background-color: #f8f9fa;">
+                <p class="mb-0 text-dark">Already have an account? <a href="{% url 'accounts:login' %}" class="auth-link">Login here</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

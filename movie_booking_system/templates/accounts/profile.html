@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - Movie Booking System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <!-- Profile Information -->
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Profile Information</h5>
+                </div>
+                <div class="card-body">
+                    {% if not edit_mode %}
+                        <div class="text-center mb-4">
+                            {% if request.user.userprofile.profile_picture %}
+                                <img src="{{ request.user.userprofile.profile_picture.url }}" 
+                                     alt="Profile Picture" 
+                                     class="rounded-circle img-thumbnail" 
+                                     style="width: 150px; height: 150px; object-fit: cover;">
+                            {% else %}
+                                <img src="https://via.placeholder.com/150" 
+                                     alt="Profile Picture" 
+                                     class="rounded-circle img-thumbnail" 
+                                     style="width: 150px; height: 150px; object-fit: cover;">
+                            {% endif %}
+                        </div>
+                        <h4 class="text-center mb-3">{{ request.user.get_full_name|default:request.user.username }}</h4>
+                        <p class="text-muted text-center mb-4">Member since {{ request.user.date_joined|date:"F Y" }}</p>
+                        
+                        <!-- User Details -->
+                        <div class="mb-4">
+                            <h6 class="text-muted mb-3">Contact Information</h6>
+                            <p class="mb-2"><strong>Email:</strong> {{ request.user.email }}</p>
+                            <p class="mb-2"><strong>Phone:</strong> {{ request.user.userprofile.phone_number|default:"Not provided" }}</p>
+                            <p class="mb-2"><strong>Address:</strong> {{ request.user.userprofile.address|default:"Not provided" }}</p>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h6 class="text-muted mb-3">Preferences</h6>
+                            <p class="mb-2"><strong>Preferred Genre:</strong> {{ request.user.userprofile.preferred_genre|default:"Not specified" }}</p>
+                            <p class="mb-2"><strong>Preferred Language:</strong> {{ request.user.userprofile.preferred_language|default:"Not specified" }}</p>
+                            <p class="mb-2">
+                                <strong>Notifications:</strong> 
+                                {% if request.user.userprofile.notification_enabled %}
+                                    <span class="text-success">Enabled</span>
+                                {% else %}
+                                    <span class="text-danger">Disabled</span>
+                                {% endif %}
+                            </p>
+                            {% if request.user.userprofile.date_of_birth %}
+                                <p class="mb-2"><strong>Date of Birth:</strong> {{ request.user.userprofile.date_of_birth|date:"F d, Y" }}</p>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid">
+                            <a href="?edit=true" class="btn btn-outline-primary">Edit Profile</a>
+                        </div>
+                    {% else %}
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            
+                            {% if user_form.errors or profile_form.errors %}
+                                <div class="alert alert-danger">
+                                    Please correct the errors below.
+                                </div>
+                            {% endif %}
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Profile Picture</label>
+                                {{ profile_form.profile_picture }}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">First Name</label>
+                                {{ user_form.first_name }}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Last Name</label>
+                                {{ user_form.last_name }}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                {{ user_form.email }}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Phone Number</label>
+                                {{ profile_form.phone_number }}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Address</label>
+                                {{ profile_form.address }}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Preferred Genre</label>
+                                {{ profile_form.preferred_genre }}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Preferred Language</label>
+                                {{ profile_form.preferred_language }}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Date of Birth</label>
+                                {{ profile_form.date_of_birth }}
+                            </div>
+                            
+                            <div class="mb-3 form-check">
+                                {{ profile_form.notification_enabled }}
+                                <label class="form-check-label">Enable Notifications</label>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                                <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary">Cancel</a>
+                            </div>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Bookings -->
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Recent Bookings</h5>
+                    <a href="{% url 'bookings:my_bookings' %}" class="btn btn-outline-light btn-sm">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if active_bookings %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Movie</th>
+                                        <th>Theater</th>
+                                        <th>Show Time</th>
+                                        <th>Seats</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for booking in active_bookings %}
+                                        <tr>
+                                            <td>{{ booking.show.movie.title }}</td>
+                                            <td>{{ booking.show.theater.name }}</td>
+                                            <td>{{ booking.show.show_date }} {{ booking.show.show_time }}</td>
+                                            <td>{{ booking.seat_numbers }}</td>
+                                            <td>
+                                                <span class="badge bg-{% if booking.booking_status == 'confirmed' %}success{% else %}warning{% endif %}">
+                                                    {{ booking.get_booking_status_display }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p class="text-muted mb-0">No active bookings found.</p>
+                            <a href="{% url 'movies:movie_list' %}" class="btn btn-primary mt-3">Book Tickets</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-control, .form-select {
+        background-color: #f8f9fa;
+        border: 1px solid #e0e0e0;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        background-color: #fff;
+        border-color: #e6194b;
+        box-shadow: 0 0 0 0.25rem rgba(230, 25, 75, 0.25);
+    }
+    
+    .card {
+        border: none;
+        border-radius: 10px;
+    }
+    
+    .card-header {
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .list-group-item {
+        border: none;
+        border-radius: 5px;
+        margin-bottom: 5px;
+    }
+    
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+    }
+</style>
+{% endblock %} 

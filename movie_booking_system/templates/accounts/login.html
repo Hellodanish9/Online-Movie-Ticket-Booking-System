@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - Movie Ticket Booking{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+    
+    .auth-card {
+        background-color: #ffffff;
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .auth-header {
+        background-color: #e6194b;
+        border-radius: 10px 10px 0 0;
+        padding: 20px;
+    }
+    
+    .form-control {
+        background-color: #ffffff;
+        border-radius: 5px;
+        padding: 12px;
+        margin-bottom: 15px;
+        border: 1px solid #ced4da;
+        color: #333;
+    }
+    
+    .form-control:focus {
+        background-color: #ffffff;
+        box-shadow: 0 0 0 0.25rem rgba(230, 25, 75, 0.25);
+        border-color: #e6194b;
+        color: #333;
+    }
+    
+    .auth-btn {
+        background-color: #e6194b;
+        border: none;
+        border-radius: 5px;
+        padding: 12px;
+        font-weight: 600;
+    }
+    
+    .auth-btn:hover {
+        background-color: #c60e3a;
+    }
+    
+    .auth-link {
+        color: #e6194b;
+        text-decoration: none;
+    }
+    
+    .auth-link:hover {
+        text-decoration: underline;
+        color: #c60e3a;
+    }
+    
+    .form-floating label {
+        color: #6c757d;
+    }
+    
+    .form-floating>.form-control:focus~label,
+    .form-floating>.form-control:not(:placeholder-shown)~label {
+        color: #6c757d;
+        transform: scale(.85) translateY(-.5rem) translateX(.15rem);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center my-5">
+    <div class="col-md-5">
+        <div class="auth-card card">
+            <div class="auth-header text-white text-center">
+                <h3 class="mb-0">Welcome Back</h3>
+                <p class="mb-0 text-white">Sign in to continue</p>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    {% if form.errors %}
+                        <div class="alert alert-danger mb-3">
+                            <strong>Invalid username or password.</strong> Please try again.
+                        </div>
+                    {% endif %}
+                    
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} mb-3">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                    
+                    <div class="form-floating mb-3">
+                        {{ form.username }}
+                        <label for="{{ form.username.id_for_label }}">Username</label>
+                    </div>
+                    
+                    <div class="form-floating mb-4">
+                        {{ form.password }}
+                        <label for="{{ form.password.id_for_label }}">Password</label>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="auth-btn btn btn-primary btn-lg">Login</button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center py-3 border-0" style="background-color: #f8f9fa;">
+                <p class="mb-0 text-dark">Don't have an account? <a href="{% url 'accounts:register' %}" class="auth-link">Register here</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add Bootstrap form control and form-floating classes to form fields
+        const username = document.getElementById('{{ form.username.id_for_label }}');
+        const password = document.getElementById('{{ form.password.id_for_label }}');
+        
+        username.classList.add('form-control');
+        username.setAttribute('placeholder', 'Username');
+        
+        password.classList.add('form-control');
+        password.setAttribute('placeholder', 'Password');
+    });
+</script>
+{% endblock %} 

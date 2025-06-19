@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}Booking Confirmed - Movie Ticket Booking{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Booking Confirmed</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                    <h2 class="mt-2">Thank You for Your Booking!</h2>
+                    <p class="lead">Your tickets have been booked successfully.</p>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Booking Details</h5>
+                        <table class="table table-bordered">
+                            <tr>
+                                <th>Booking ID</th>
+                                <td>{{ booking.id }}</td>
+                            </tr>
+                            <tr>
+                                <th>Movie</th>
+                                <td>{{ booking.show.movie.title }}</td>
+                            </tr>
+                            <tr>
+                                <th>Theater</th>
+                                <td>{{ booking.show.theater.name }}</td>
+                            </tr>
+                            <tr>
+                                <th>Show Date</th>
+                                <td>{{ booking.show.show_date }}</td>
+                            </tr>
+                            <tr>
+                                <th>Show Time</th>
+                                <td>{{ booking.show.show_time }}</td>
+                            </tr>
+                            <tr>
+                                <th>Seats</th>
+                                <td>{{ booking.seat_numbers }}</td>
+                            </tr>
+                            <tr>
+                                <th>Amount Paid</th>
+                                <td>₹{{ booking.total_amount }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="ticket-container p-3 border rounded bg-light">
+                            <h4 class="text-center mb-3">E-Ticket</h4>
+                            <div class="text-center mb-2">
+                                <h5>{{ booking.show.movie.title }}</h5>
+                                <p class="mb-0">{{ booking.show.theater.name }}</p>
+                                <p>Screen {{ booking.show.screen_number }}</p>
+                            </div>
+                            
+                            <div class="row mb-2">
+                                <div class="col-6">
+                                    <strong>Date:</strong> {{ booking.show.show_date }}
+                                </div>
+                                <div class="col-6">
+                                    <strong>Time:</strong> {{ booking.show.show_time }}
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-2">
+                                <div class="col-6">
+                                    <strong>Seats:</strong> {{ booking.seat_numbers }}
+                                </div>
+                                <div class="col-6">
+                                    <strong>Booking ID:</strong> {{ booking.id }}
+                                </div>
+                            </div>
+                            
+                            <div class="text-center mt-3">
+                                <div style="width: 200px; height: 50px; background-color: #000; margin: 0 auto;">
+                                    <div class="text-white pt-2">BARCODE</div>
+                                </div>
+                                <p class="small text-muted mt-1">Show this ticket at the entrance</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <a href="{% url 'accounts:profile' %}" class="btn btn-primary me-2">View My Bookings</a>
+                    <a href="{% url 'movies:movie_list' %}" class="btn btn-outline-primary">Browse More Movies</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
