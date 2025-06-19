@@ -126,7 +126,7 @@ movie_booking_system/
 
 > **Note:** Add actual screenshots here for better understanding.
 
-- ![Homepage](screenshots/homepage.png)
+- ![Homepage](movie_booking_system/screenshots/homepage.png)
 - ![Movie Details](screenshots/movie_details.png)
 - ![Seat Selection](screenshots/seat_selection.png)
 - ![Booking Confirmation](screenshots/booking_confirmation.png)
