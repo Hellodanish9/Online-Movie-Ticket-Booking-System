@@ -154,7 +154,7 @@ This project is licensed under the MIT License.
 For any queries or support, contact:
 - **DANISH KHAN**
 - Email: hellodanish97@gmail.com
-- GitHub: [your-github-username](https://github.com/Hellodanish9)
+- GitHub: [Hellodanish9](https://github.com/Hellodanish9)
 
 ---
 
